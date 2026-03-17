@@ -1,12 +1,13 @@
 # 自动点击
 
-Switch to English README `/docs/README.en.md`
+[Switch to English README](/README.en.md)
 
 用于辅助获取鼠标坐标、按间隔在指定位置自动点击的 Python 小工具集。支持命令行与图形界面，适合需要重复点击或精确定位的场景。
 
 在 macOS 需要根据提示，在 **系统设置 → 隐私与安全性 → 辅助功能** 中对运行载体（如终端、IDE）开启权限，允许应用程序控制电脑。
 
 项目的开发和文档翻译工作由 cursor 辅助
+
 ---
 
 ## 功能概览
