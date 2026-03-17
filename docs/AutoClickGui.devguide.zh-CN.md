@@ -26,18 +26,19 @@
 - **点击动作**：
   - 每次点击前先隐藏圆圈，再执行 `pyautogui.moveTo` + `pyautogui.click`，之后再显示圆圈
   - 这样可以保证点击落到下层窗口，不会点到圆圈窗本身
+  - 启动/点击前会有一个很短的 `QTimer.singleShot(10, ...)` 延迟，帮助窗口从合成层移除，提升“隐藏后再点”的稳定性
 - **停止条件**：
   - 鼠标移出圆心半径 `R` 的范围会触发自动停止
 - **点击参数**：
-  - 间隔最小 `MIN_INTERVAL_SEC`
+  - 间隔最小 `MIN_INTERVAL_SEC`（当前代码为 0.1 秒）
   - 点击次数：`0` 表示不限
 
 ### 3) 圆圈初始/复位位置
 
-- 统一由 `ControlPanel._place_circle_relative_to_panel()` 计算
+- 统一由 `ControlPanel._place_circle_relative_to_panel()` 计算并做屏幕 clamp
 - **坐标系**：以操作面板**左上角**为原点（像素）
-  - `CIRCLE_OFFSET_X`：向右为正
-  - `CIRCLE_OFFSET_Y`：向下为正
+  - `CIRCLE_OFFSET_X_ZH` / `CIRCLE_OFFSET_Y_ZH`：中文界面下的偏移（x 向右为正，y 向下为正）
+  - `CIRCLE_OFFSET_X_EN` / `CIRCLE_OFFSET_Y_EN`：英文界面下的偏移（独立控制，避免因面板宽度变化导致位置不合适）
 - 函数内部会做屏幕可见区域 clamp，避免圆圈出屏
 
 ### 4) 置顶（📌 铆钉）
@@ -47,6 +48,12 @@
   - **不置顶**：📌 倾斜
   - 悬浮 tooltip 随状态变化
 - 切换时通过 `setWindowFlag(WindowStaysOnTopHint, on)` 动态生效
+
+### 5) 语言切换（中/英）
+
+- 默认语言为中文（`LANG_ZH`），可切换为英文（`LANG_EN`）
+- 文案统一走 `TRANSLATIONS` 与 `_t(key)`，切换时刷新标题、标签、按钮、状态文案、以及 📌 tooltip
+- 语言切换也会影响圆圈偏移：使用对应语言的 `CIRCLE_OFFSET_*_(ZH|EN)` 参数
 
 ## 开发指南
 
