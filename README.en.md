@@ -123,7 +123,7 @@ python AutoClickGui.py
 
 ### Detailed development/interaction notes
 
-See: `docs/AutoClickGui.devguide.en.md`
+[Document](/docs/AutoClickGui.devguide.en.md)
 
 ## Files
 

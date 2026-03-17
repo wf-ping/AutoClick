@@ -123,7 +123,7 @@ python AutoClickGui.py
 
 ### 详细开发/交互说明
 
-见：`docs/AutoClickGui.devguide.zh-CN.md`
+[文档](/docs/AutoClickGui.devguide.zh-CN.md)
 
 ## 文件说明
 
