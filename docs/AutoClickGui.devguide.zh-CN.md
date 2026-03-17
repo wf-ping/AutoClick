@@ -1,4 +1,4 @@
-# intervalClickGui.py 开发指南（中文）
+# AutoClickGui.py 开发指南（中文）
 
 ## 概览
 
@@ -53,7 +53,7 @@
 ### 运行
 
 ```bash
-python3 intervalClickGui.py
+python3 AutoClickGui.py
 ```
 
 ## 主要类/函数索引

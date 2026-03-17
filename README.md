@@ -1,4 +1,4 @@
-# 点击
+# 自动点击
 
 Switch to English README `/docs/README.en.md`
 
@@ -14,7 +14,7 @@ Switch to English README `/docs/README.en.md`
 | 工具 | 说明 |
 |------|------|
 | **mousePos.py** | 获取当前鼠标坐标，支持实时监控；带交互式 Yes/No 引导。 |
-| **intervalClickGui.py** | 图形界面：可拖动圆圈标定点击位置，按间隔自动点击，支持次数与移出停止。 |
+| **AutoClickGui.py** | 图形界面：可拖动圆圈标定点击位置，按间隔自动点击，支持次数与移出停止。 |
 
 ---
 
@@ -84,7 +84,7 @@ python mousePos.py -h
 
 ---
 
-## 二、intervalClickGui.py — 间隔点击（图形界面）
+## 二、AutoClickGui.py — 间隔点击（图形界面）
 
 在屏幕上用圆圈标定点击位置，按设定间隔自动左键点击；可设点击次数、移出圆圈自动停止等。
 
@@ -115,12 +115,12 @@ python mousePos.py -h
 ### 用法
 
 ```bash
-python intervalClickGui.py
+python AutoClickGui.py
 ```
 
 ### 详细开发/交互说明
 
-见：`docs/intervalClickGui.devguide.zh-CN.md`
+见：`docs/AutoClickGui.devguide.zh-CN.md`
 
 ## 文件说明
 
@@ -130,15 +130,15 @@ click/
 ├── README.en.md        # 本说明（英文版）
 ├── requirements.txt    # Python 依赖
 ├── mousePos.py         # 鼠标位置（命令行）
-├── intervalClickGui.py # 间隔点击（图形界面）
+├── AutoClickGui.py # 间隔点击（图形界面）
 └── docs/
-    ├── intervalClickGui.devguide.zh-CN.md # 开发指南（中文）
-    └── intervalClickGui.devguide.en.md    # 开发指南（英文）
+    ├── AutoClickGui.devguide.zh-CN.md # 开发指南（中文）
+    └── AutoClickGui.devguide.en.md    # 开发指南（英文）
 ```
 
 ### requirements.txt
 
 - `pyautogui`：鼠标位置获取与模拟点击。
-- `PyQt6`：图形界面（仅 intervalClickGui 需要）。
+- `PyQt6`：图形界面（仅 AutoClickGui 需要）。
 
 ---

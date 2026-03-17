@@ -1,4 +1,4 @@
-# Click
+# Auto Click
 
 切换到中文README `/docs/README.en.md`
 
@@ -15,7 +15,7 @@ The project development and document translation work were assisted by cursor.
 | Tool | Description |
 |------|-------------|
 | **mousePos.py** | Get the current mouse coordinates, supports live watching; includes interactive Yes/No guidance. |
-| **intervalClickGui.py** | GUI: drag a circle to mark the click position, auto-click at an interval; supports click count and “move out to stop”. |
+| **AutoClickGui.py** | GUI: drag a circle to mark the click position, auto-click at an interval; supports click count and “move out to stop”. |
 
 ---
 
@@ -85,7 +85,7 @@ python mousePos.py -h
 
 ---
 
-## 2) intervalClickGui.py — Interval click (GUI)
+## 2) AutoClickGui.py — Interval click (GUI)
 
 Use a circle on the screen to mark the click position, then left-click at the configured interval; supports click count and stopping automatically when the mouse moves out of the circle.
 
@@ -116,12 +116,12 @@ Use a circle on the screen to mark the click position, then left-click at the co
 ### Usage
 
 ```bash
-python intervalClickGui.py
+python AutoClickGui.py
 ```
 
 ### Detailed development/interaction notes
 
-See: `docs/intervalClickGui.devguide.en.md`
+See: `docs/AutoClickGui.devguide.en.md`
 
 ## Files
 
@@ -131,16 +131,16 @@ click/
 ├── README.en.md        # This document (English)
 ├── requirements.txt    # Python dependencies
 ├── mousePos.py         # Mouse position (CLI)
-├── intervalClickGui.py # Interval click (GUI)
+├── AutoClickGui.py # Interval click (GUI)
 └── docs/
-    ├── intervalClickGui.devguide.zh-CN.md # Dev guide (Chinese)
-    └── intervalClickGui.devguide.en.md    # Dev guide (English)
+    ├── AutoClickGui.devguide.zh-CN.md # Dev guide (Chinese)
+    └── AutoClickGui.devguide.en.md    # Dev guide (English)
 ```
 
 ### requirements.txt
 
 - `pyautogui`: mouse position and simulated clicking.
-- `PyQt6`: GUI (only required by intervalClickGui).
+- `PyQt6`: GUI (only required by AutoClickGui).
 
 ---
 

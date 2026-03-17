@@ -3,8 +3,8 @@
 间隔点击（Interval Click）GUI
 
 说明文档已移至：
-- 中文：docs/intervalClickGui.devguide.zh-CN.md
-- English: docs/intervalClickGui.devguide.en.md
+- 中文：docs/AutoClickGui.devguide.zh-CN.md
+- English: docs/AutoClickGui.devguide.en.md
 """
 import sys
 

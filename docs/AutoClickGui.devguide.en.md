@@ -1,4 +1,4 @@
-# intervalClickGui.py Development Guide (English)
+# AutoClickGui.py Development Guide (English)
 
 ## Overview
 
@@ -53,7 +53,7 @@
 ## Development notes
 
 ```bash
-python3 intervalClickGui.py
+python3 AutoClickGui.py
 ```
 
 ## Key symbols
