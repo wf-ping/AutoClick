@@ -1,5 +1,7 @@
 # 自动点击
 
+![效果图](/docs/ui.png)
+
 [Switch to English README](/README.en.md)
 
 用于辅助获取鼠标坐标、按间隔在指定位置自动点击的 Python 小工具集。支持命令行与图形界面，适合需要重复点击或精确定位的场景。

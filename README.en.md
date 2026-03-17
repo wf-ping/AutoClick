@@ -1,5 +1,7 @@
 # Auto Click
 
+![ui](/docs/ui.png)
+
 [切换到中文README](/README.md)
 
 A small Python toolkit that helps you get mouse coordinates and automatically click a specified location at a fixed interval. It supports both CLI and GUI, and is suitable for repetitive clicking or precise targeting.
