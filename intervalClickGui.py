@@ -36,7 +36,7 @@ from PyQt6.QtWidgets import (
 R = 20
 CIRCLE_SIZE = R * 2 + 4
 DEFAULT_INTERVAL = 1.0
-MIN_INTERVAL_SEC = 0.05  # 点击间隔底线 50 毫秒
+MIN_INTERVAL_SEC = 0.1  # 点击间隔底线 100 毫秒
 
 # 坐标提示距离圆心的偏移与边距（像素）
 COORD_HINT_OFFSET = 14
@@ -45,9 +45,64 @@ COORD_HINT_MARGIN = 10
 # 圆圈复位/初始位置（以操作面板左上角为原点，单位：像素）
 # - x 为正向右
 # - y 为正向下
-CIRCLE_OFFSET_X = 150
-CIRCLE_OFFSET_Y = 35
+# 中文版偏移
+CIRCLE_OFFSET_X_ZH = 150
+CIRCLE_OFFSET_Y_ZH = 35
+# 英文版偏移
+CIRCLE_OFFSET_X_EN = 230
+CIRCLE_OFFSET_Y_EN = 35
 
+# 语言
+LANG_ZH = "zh"
+LANG_EN = "en"
+CURRENT_LANG = LANG_ZH
+
+
+TRANSLATIONS = {
+    "zh": {
+        "title": "间隔点击",
+        "drag_bar": "间隔点击 — 拖动此处移动",
+        "coord_title": "圆心坐标 (拖动可移动):",
+        "interval": "间隔(秒):",
+        "count": "点击次数:",
+        "count_placeholder": "不限",
+        "start": "开始",
+        "stop": "停止",
+        "reset": "复位",
+        "close": "关闭",
+        "running": "运行中 (按停止结束)",
+        "moved_out_stop": "鼠标已移出圆圈，已自动停止",
+        "stopped_total": "已停止，共点击 {done} 次",
+        "done_total": "已完成，共点击 {done} 次",
+        "clicked_progress": "已点击 {done}/{target}",
+        "pined": "置顶",
+        "unpined": "未置顶",
+        "lang_toggle": "EN",
+    },
+    "en": {
+        "title": "Interval Click",
+        "drag_bar": "Interval Click — drag here to move",
+        "coord_title": "Center coords (drag circle to move):",
+        "interval": "Interval (s):",
+        "count": "Click count:",
+        "count_placeholder": "Unlimited",
+        "start": "Start",
+        "stop": "Stop",
+        "reset": "Reset",
+        "close": "Close",
+        "running": "Running (press Stop)",
+        "moved_out_stop": "Mouse moved out of circle; stopped",
+        "stopped_total": "Stopped. Total clicks: {done}",
+        "done_total": "Done. Total clicks: {done}",
+        "clicked_progress": "Clicked {done}/{target}",
+        "pined": "Pinned",
+        "unpined": "Unpinned",
+        "lang_toggle": "中文",
+    }
+}
+
+def _t(key: str) -> str:
+    return TRANSLATIONS.get(CURRENT_LANG, TRANSLATIONS[LANG_ZH]).get(key, key)
 
 class PinToggle(QAbstractButton):
     """铆钉式置顶开关：置顶竖直，取消置顶倾斜。"""
@@ -57,14 +112,17 @@ class PinToggle(QAbstractButton):
         self.setCheckable(True)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setFixedSize(22, 22)
+        self.set_language(CURRENT_LANG)
         self.toggled.connect(lambda _on: self._refresh_tooltip())
         self._refresh_tooltip()
 
+    def set_language(self, lang: str):
+        global CURRENT_LANG
+        CURRENT_LANG = lang
+        self._refresh_tooltip()
+
     def _refresh_tooltip(self):
-        if self.isChecked():
-            self.setToolTip("已置顶")
-        else:
-            self.setToolTip("未置顶")
+        self.setToolTip(_t("pined") if self.isChecked() else _t("unpined"))
 
     def enterEvent(self, event):
         self._refresh_tooltip()
@@ -297,7 +355,9 @@ class ControlPanel(QWidget):
     def __init__(self, circle_win: CircleWindow):
         super().__init__()
         self.circle_win = circle_win
-        self.setWindowTitle("间隔点击")
+        global CURRENT_LANG
+        self.lang = CURRENT_LANG  # 默认中文
+        self.setWindowTitle(_t("title"))
         self.setWindowFlags(
             Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint
         )
@@ -350,6 +410,34 @@ class ControlPanel(QWidget):
         self.coord_update_timer.timeout.connect(self._update_coord_label)
         self.coord_update_timer.start(200)
 
+    def _apply_language(self):
+        self.setWindowTitle(_t("title"))
+        self.drag_bar.setText(_t("drag_bar"))
+        self.coord_title_label.setText(_t("coord_title"))
+        self.interval_label.setText(_t("interval"))
+        self.count_label.setText(_t("count"))
+        self.start_btn.setText(_t("start"))
+        self.stop_btn.setText(_t("stop"))
+        self.reset_btn.setText(_t("reset"))
+        self.close_btn.setText(_t("close"))
+        self.lang_btn.setText(_t("lang_toggle"))
+        self.count_spin.setSpecialValueText(_t("count_placeholder"))
+        self.count_spin.lineEdit().setPlaceholderText(_t("count_placeholder"))
+
+        self.pin_btn.set_language(self.lang)
+        # 更新后刷新尺寸（确保文本变化时宽度可收缩）
+        self.adjustSize()
+
+    def _toggle_language(self):
+        global CURRENT_LANG
+        self.lang = LANG_EN if self.lang == LANG_ZH else LANG_ZH
+        CURRENT_LANG = self.lang
+        self._apply_language()
+        # 根据语言重新计算尺寸，避免英文变宽后无法恢复
+        self.adjustSize()
+        # 语言切换后重新按偏移规则放置圆圈（与面板解耦）
+        self._place_circle_relative_to_panel()
+
     def _build_ui(self):
         layout = QVBoxLayout(self)
         layout.setSpacing(8)
@@ -358,28 +446,36 @@ class ControlPanel(QWidget):
         # 顶部拖动条（拖动此处可移动操作框）
         top_row = QHBoxLayout()
         top_row.setSpacing(6)
+        self.lang_btn = QPushButton(_t("lang_toggle"))
+        self.lang_btn.setFixedWidth(40)
+        self.lang_btn.setMinimumHeight(22)
+        self.lang_btn.clicked.connect(self._toggle_language)
+
         self.pin_btn = PinToggle()
         self.pin_btn.setChecked(True)
         self.pin_btn.toggled.connect(self._toggle_always_on_top)
 
-        drag_bar = QLabel("间隔点击 — 拖动此处移动")
-        drag_bar.setStyleSheet("color: #888; font-size: 11px; padding: 4px 0;")
-        drag_bar.setCursor(Qt.CursorShape.SizeAllCursor)
+        self.drag_bar = QLabel(_t("drag_bar"))
+        self.drag_bar.setStyleSheet("color: #888; font-size: 11px; padding: 4px 0;")
+        self.drag_bar.setCursor(Qt.CursorShape.SizeAllCursor)
 
-        top_row.addWidget(drag_bar)
+        top_row.addWidget(self.drag_bar)
         top_row.addStretch()
+        top_row.addWidget(self.lang_btn)
         top_row.addWidget(self.pin_btn)
         layout.addLayout(top_row)
 
         coord_layout = QVBoxLayout()
-        coord_layout.addWidget(QLabel("圆心坐标 (拖动可移动):"))
+        self.coord_title_label = QLabel(_t("coord_title"))
+        coord_layout.addWidget(self.coord_title_label)
         self.coord_label = QLabel("X=0, Y=0")
         self.coord_label.setStyleSheet("color: #ff6600; font-family: Consolas; font-size: 13px;")
         coord_layout.addWidget(self.coord_label)
         layout.addLayout(coord_layout)
 
         interval_row = QHBoxLayout()
-        interval_row.addWidget(QLabel("间隔(秒):"))
+        self.interval_label = QLabel(_t("interval"))
+        interval_row.addWidget(self.interval_label)
         self.interval_spin = QDoubleSpinBox()
         self.interval_spin.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.PlusMinus)
         self.interval_spin.setMinimum(MIN_INTERVAL_SEC)
@@ -394,13 +490,14 @@ class ControlPanel(QWidget):
         layout.addLayout(interval_row)
 
         count_row = QHBoxLayout()
-        count_row.addWidget(QLabel("点击次数:"))
+        self.count_label = QLabel(_t("count"))
+        count_row.addWidget(self.count_label)
         self.count_spin = QSpinBox()
         self.count_spin.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.PlusMinus)
         self.count_spin.setMinimum(0)
         self.count_spin.setMaximum(999999)
         self.count_spin.setValue(0)
-        self.count_spin.setSpecialValueText("不限")
+        self.count_spin.setSpecialValueText(_t("count_placeholder"))
         self.count_spin.setFixedWidth(110)
         self.count_spin.setMinimumHeight(28)
         count_row.addWidget(self.count_spin)
@@ -417,32 +514,36 @@ class ControlPanel(QWidget):
         btn_row2 = QHBoxLayout()
         btn_row2.setSpacing(8)
 
-        self.start_btn = QPushButton("开始")
+        self.start_btn = QPushButton(_t("start"))
         self.start_btn.clicked.connect(self._start_click)
-        self.stop_btn = QPushButton("停止")
+        self.stop_btn = QPushButton(_t("stop"))
         self.stop_btn.clicked.connect(self._stop_click)
         self.stop_btn.setEnabled(False)
-        self.reset_btn = QPushButton("复位")
+        self.reset_btn = QPushButton(_t("reset"))
         self.reset_btn.clicked.connect(self._reset_circle)
-        close_btn = QPushButton("关闭")
-        close_btn.clicked.connect(self._do_close)
+        self.close_btn = QPushButton(_t("close"))
+        self.close_btn.clicked.connect(self._do_close)
 
-        for b in (self.start_btn, self.stop_btn, self.reset_btn, close_btn):
+        for b in (self.start_btn, self.stop_btn, self.reset_btn, self.close_btn):
             b.setMinimumHeight(30)
 
         btn_row1.addWidget(self.start_btn)
         btn_row1.addWidget(self.stop_btn)
         btn_row2.addWidget(self.reset_btn)
-        btn_row2.addWidget(close_btn)
+        btn_row2.addWidget(self.close_btn)
         layout.addLayout(btn_row1)
         layout.addLayout(btn_row2)
 
+        # 初始化一次语言相关文本（包含 pin tooltip）
+        self._apply_language()
+
     def _place_circle_relative_to_panel(self):
         """将圆圈放到操作面板相对偏移位置（初始/复位一致）。"""
+        # 注意：圆圈位置完全由 CIRCLE_OFFSET_X/Y 控制，与面板宽度无关（语言切换不会影响相对偏移）
         px = self.x()
         py = self.y()
-        x = px + int(CIRCLE_OFFSET_X)
-        y = py + int(CIRCLE_OFFSET_Y)
+        x = px + int(CIRCLE_OFFSET_X_ZH if self.lang == LANG_ZH else CIRCLE_OFFSET_X_EN)
+        y = py + int(CIRCLE_OFFSET_Y_ZH if self.lang == LANG_ZH else CIRCLE_OFFSET_Y_EN)
 
         # 屏幕边界保护（按面板所在屏幕/主屏可用区域 clamp）
         screen = QGuiApplication.screenAt(QPoint(px + self.width() // 2, py + self.height() // 2))
@@ -526,7 +627,8 @@ class ControlPanel(QWidget):
         self.interval_spin.setEnabled(False)
         self.count_spin.setEnabled(False)
         self.status_label.setText("")
-        self._on_click_tick()
+        # 启动时稍微延迟，避免第一次立即触发
+        QTimer.singleShot(10, self._on_click_tick)
 
     def _on_click_tick(self):
         if not self.running:
@@ -535,7 +637,8 @@ class ControlPanel(QWidget):
             sx, sy = self._get_click_center()
             # 先隐藏圆圈，再点击，这样点击会落到下层窗口；点击后再显示圆圈
             self.circle_win.hide()
-            QTimer.singleShot(30, lambda: self._perform_click_then_show(sx, sy))
+            # 稍微延长延迟，确保窗口从合成层移除
+            QTimer.singleShot(10, lambda: self._perform_click_then_show(sx, sy))
         except Exception:
             self.circle_win.show()
             self.click_timer.start(int(self.interval_sec * 1000))
@@ -551,13 +654,17 @@ class ControlPanel(QWidget):
         self.click_count_done += 1
         self.coord_label.setText(f"X={sx}, Y={sy}")
         if self.click_count_target is not None:
-            self.status_label.setText(f"已点击 {self.click_count_done}/{self.click_count_target}")
+            self.status_label.setText(
+                _t("clicked_progress").format(
+                    done=self.click_count_done, target=self.click_count_target
+                )
+            )
             if self.click_count_done >= self.click_count_target:
-                self.status_label.setText(f"已完成，共点击 {self.click_count_done} 次")
+                self.status_label.setText(_t("done_total").format(done=self.click_count_done))
                 self._stop_click(completed=True)
                 return
         else:
-            self.status_label.setText("运行中 (按停止结束)")
+            self.status_label.setText(_t("running"))
         if self.running:
             self.click_timer.start(int(self.interval_sec * 1000))
 
@@ -572,7 +679,7 @@ class ControlPanel(QWidget):
             if dist_sq > R * R:
                 self.mouse_watch_timer.stop()
                 self._stop_click()
-                self.status_label.setText("鼠标已移出圆圈，已自动停止")
+                self.status_label.setText(_t("moved_out_stop"))
         except Exception:
             pass
 
@@ -587,7 +694,7 @@ class ControlPanel(QWidget):
         self.interval_spin.setEnabled(True)
         self.count_spin.setEnabled(True)
         if self.click_count_done > 0 and not completed:
-            self.status_label.setText(f"已停止，共点击 {self.click_count_done} 次")
+            self.status_label.setText(_t("stopped_total").format(done=self.click_count_done))
         self._update_coord_label()
 
     def _do_close(self):
